@@ -1,0 +1,53 @@
+### 1. успешная Регистрация (ожидаем 201 Created)
+POST http://127.0.0.1:3000/auth/signup
+Content-Type: application/json
+
+{
+  "username": "user_test_01",
+  "password": "SecurePassword123"
+}
+
+### 2. ошибка валидации DTO (ожидаем 400 Bad Request)
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "username": "short",
+  "password": "weak"
+}
+
+### 3. ошибка конфликта БД (ожидаем 409 Conflict)
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "username": "user_test_01",
+  "password": "AnotherPassword456"
+}
+
+### 4. успешный вход (ожидаем 200 OK)
+POST http://127.0.0.1:3000/auth/signin
+Content-Type: application/json
+
+{
+  "username": "user_test_01",
+  "password": "SecurePassword123"
+}
+
+### 5. неверные учетные данные (ожидаем 401 Unauthorized)
+POST http://127.0.0.1:3000/auth/signin
+Content-Type: application/json
+
+{
+  "username": "user_test_01",
+  "password": "wrongpassword"
+}
+
+### 5.1 проверка ошибки входа (ожидаем 401 Unauthorized)
+POST http://127.0.0.1:3000/auth/signin
+Content-Type: application/json
+
+{
+  "username": "user_test_01",
+  "password": "SecurePassword1243"
+}
