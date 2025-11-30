@@ -6,8 +6,8 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     host: '127.0.0.1',
     port: 5433,
     username: 'postgres',
-    password: 'nest_pass',
-    database: 'nest_db',
+    password: 'new_temp_pass',
+    database: 'postgres',
     entities: [User],
     synchronize: true,
 };
