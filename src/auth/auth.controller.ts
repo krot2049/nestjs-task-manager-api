@@ -2,13 +2,13 @@ import { Controller, Post, Body, ValidationPipe, HttpCode } from '@nestjs/common
 import { AuthCredentialsDto, } from './dto/auth-credentials.dto';
 import { AuthService } from './auth.service';
 
-@Controller('/auth') // определяем базовый маршрут
+@Controller('/auth')
 export class AuthController {
-    constructor(private authService: AuthService) {} // инжектируем сервис
-    @Post('/signup') // определяем метод post для маршрута
-    @HttpCode(201) // устанавливаем http статус ответа 201 created
+    constructor(private authService: AuthService) {}
+    @Post('/signup')
+    @HttpCode(201)
     async signup (
-        @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto, // получаем и валидируем тело запроса
+        @Body(ValidationPipe) authCredentialsDto: AuthCredentialsDto,
     ): Promise<void> {
         await this.authService.signUp(authCredentialsDto);
     }
