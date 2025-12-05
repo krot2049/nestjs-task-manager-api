@@ -1,8 +1,9 @@
-import {Controller, Post, Body, Param, ParseIntPipe, Get, Delete, HttpCode, Patch} from '@nestjs/common';
+import {Controller, Post, Body, Param, ParseIntPipe, Get, Delete, HttpCode, Patch, Query} from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Task } from './task.entity';
 import { UpdateTaskStatusDto } from "./dto/update-task-status.dto";
-import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateTasksDto } from './dto/create-task.dto';
+import { GetTasksFilterDto} from "./dto/get-tasks-filter.dto";
 
 @Controller('tasks')
 export class TasksController {
@@ -22,16 +23,18 @@ export class TasksController {
     @Post()
     async createTask(
         // используем CreateTaskDto для валидации тела запроса
-        @Body() createTaskDto: CreateTaskDto,
+        @Body() createTaskDto: CreateTasksDto,
     ): Promise<Task> {
         // передаем DTO в сервис
         return this.tasksService.createTask(createTaskDto);
     }
 
-    // эндпоинт для получения всех задач
+    // эндпоинт для получения всех задач с возможностью валидации
     @Get()
-    async getAllTasks(): Promise<Task[]> {
-        return this.tasksService.getAllTasks();
+    async getAllTasks(
+        @Query() filterDto: GetTasksFilterDto,
+    ): Promise<Task[]> {
+        return this.tasksService.getTasks(filterDto);
     }
 
     // эндпоинт для получание задачи по id

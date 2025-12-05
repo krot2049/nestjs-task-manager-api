@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { Task, TaskStatus } from './task.entity';
-import { CreateTaskDto } from './dto/create-task.dto';
+import { CreateTasksDto } from './dto/create-task.dto';
+import { GetTasksFilterDto} from "./dto/get-tasks-filter.dto";
 
 @Injectable()
 export class TasksService {
@@ -10,8 +11,8 @@ export class TasksService {
     ) {}
 
     // логика crud, метод для создания новой задачи
-    async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
-        const { title, description } = createTaskDto;
+    async createTask(createTasksDto: CreateTasksDto): Promise<Task> {
+        const { title, description } = createTasksDto;
         const task = this.taskRepository.create({
             title,
             description,
@@ -43,8 +44,24 @@ export class TasksService {
 
     // метод для получения всех задач
 
-    async getAllTasks(): Promise<Task[]> {
-        return await this.taskRepository.find();
+    async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
+        const { status, search } = filterDto;
+        const query = this.taskRepository.createQueryBuilder('task');
+
+        // фильтрация по статусу
+        if (status) {
+            query.andWhere('task.status = :status', { status: String(status) });
+        }
+
+        // фильтрация по поиску
+        if (search) {
+            query.andWhere(
+                '(LOWER(task.title) LIKE LOWER(:search) OR LOWER(task.description) LIKE LOWER(:search))',
+                {search: `%${search}%`}
+            );
+        }
+
+        return await query.getMany();
     }
 
     // метод для получения задачи по id
