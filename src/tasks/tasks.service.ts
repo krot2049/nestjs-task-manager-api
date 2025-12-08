@@ -5,7 +5,6 @@ import { CreateTasksDto } from './dto/create-task.dto';
 import { GetTasksFilterDto} from "./dto/get-tasks-filter.dto";
 import { User } from '../auth/user.entity';
 
-
 @Injectable()
 export class TasksService {
     constructor(
@@ -38,7 +37,6 @@ export class TasksService {
     }
 
     // метод для получения всех задач
-
     async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
         const { status, search } = filterDto;
         const query = this.taskRepository.createQueryBuilder('task');
@@ -61,7 +59,6 @@ export class TasksService {
     }
 
     // метод для получения задачи по id
-
     async getTask(taskId: number, user: User): Promise<Task> {
         const found = await this.taskRepository.findOne({
             where: {
@@ -77,7 +74,6 @@ export class TasksService {
     }
 
     // метод для удаления задач по id
-
     async deleteTask(taskId: number, user: User): Promise<void> {
         // метод delete удаляет запись по условию (id)
         const result = await this.taskRepository.delete({
@@ -86,7 +82,6 @@ export class TasksService {
         });
 
         // проверяем была ли удалена хотя бы одна строка
-
         if (result.affected === 0) {
             throw new NotFoundException(`Задача с ID "${taskId}" не найдена`)
         }

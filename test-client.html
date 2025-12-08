@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Task API Test Client</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { border-bottom: 2px solid #ccc; padding-bottom: 5px; margin-top: 20px; }
+        input[type="text"], input[type="password"], textarea { width: 100%; padding: 8px; margin: 5px 0 10px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #5cb85c; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; margin-right: 10px; }
+        button.register { background-color: #007bff; }
+        button.register:hover { background-color: #0056b3; }
+        button:hover { background-color: #4cae4c; }
+        #output { margin-top: 20px; padding: 10px; border: 1px solid #ddd; background-color: #e9e9e9; white-space: pre-wrap; word-wrap: break-word; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Task Manager API Tester</h1>
+    <div id="status">Статус: <span id="auth-status">Не авторизован</span></div>
+
+    <h2>1. Авторизация (Получить токен)</h2>
+    <input type="text" id="username" value="user_a" placeholder="Username">
+    <input type="password" id="password" value="UserAPass123" placeholder="Password (минимум 8 символов, буквы и цифры)">
+    <button onclick="signIn()">Войти</button>
+    <button onclick="signUp()" class="register">Регистрация</button>
+    <button onclick="logOut()">Очистить токен</button>
+
+    <h2>2. Задачи (Требуется токен)</h2>
+    <input type="text" id="taskTitle" placeholder="Заголовок задачи">
+    <textarea id="taskDescription" placeholder="Описание задачи"></textarea>
+    <button onclick="createTask()">Создать задачу</button>
+    <button onclick="getTasks()">Получить мои задачи</button>
+
+    <h2>3. Ответ Сервера</h2>
+    <div id="output">...</div>
+</div>
+
+<script>
+    const API_URL = 'http://localhost:3000';
+    let accessToken = localStorage.getItem('accessToken') || '';
+
+
+    const updateAuthStatus = () => {
+        const statusEl = document.getElementById('auth-status');
+        if (accessToken) {
+            statusEl.textContent = 'Авторизован';
+            statusEl.style.color = 'green';
+        } else {
+            statusEl.textContent = 'Не авторизован';
+            statusEl.style.color = 'red';
+        }
+    };
+    updateAuthStatus();
+
+    const displayOutput = (data, error = false) => {
+        const outputEl = document.getElementById('output');
+        outputEl.className = error ? 'error' : '';
+        outputEl.textContent = JSON.stringify(data, null, 2);
+    };
+
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}${endpoint}`, {
+                method,
+                headers,
+                body: body ? JSON.stringify(body) : null,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                displayOutput(data, true);
+                return null;
+            }
+
+            displayOutput(data);
+            return data;
+
+        } catch (error) {
+            displayOutput({ message: 'Ошибка сети или CORS', error: error.message }, true);
+            return null;
+        }
+    }
+    async function signUp() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Попытка регистрации
+        const data = await apiRequest('/auth/signup', 'POST', { username, password });
+
+        if (data) {
+            displayOutput({ message: 'Пользователь успешно создан!', user: data }, false);
+        }
+    }
+
+    async function signIn() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        const data = await apiRequest('/auth/signin', 'POST', { username, password });
+
+        if (data && data.accessToken) {
+            accessToken = data.accessToken;
+            localStorage.setItem('accessToken', accessToken);
+            updateAuthStatus();
+            displayOutput({ message: 'Вход успешен!', token: data.accessToken });
+        }
+    }
+
+    function logOut() {
+        accessToken = '';
+        localStorage.removeItem('accessToken');
+        updateAuthStatus();
+        displayOutput({ message: 'Токен удален' });
+    }
+
+    async function getTasks() {
+        await apiRequest('/tasks?status=OPEN&search=проект');
+    }
+
+    async function createTask() {
+        const title = document.getElementById('taskTitle').value || 'Новая задача из клиента';
+        const description = document.getElementById('taskDescription').value || 'Тестовое описание';
+
+        await apiRequest('/tasks', 'POST', { title, description });
+    }
+
+</script>
+</body>
+</html>

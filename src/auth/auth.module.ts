@@ -10,24 +10,18 @@ import { JwtStrategy } from './jwt/jwt.strategy';
 @Module({
     imports: [
         PassportModule.register({ defaultStrategy: 'jwt' }),
-        JwtModule.register({
 
+        JwtModule.register({
             secret: 'topSecret51',
             signOptions: {
-                expiresIn: '1h',
+                expiresIn: '24h',
             },
         }),
 
-        // подключаем репозиторий user чтобы authService мог работать с базой
         TypeOrmModule.forFeature([User])
     ],
-
     controllers: [AuthController],
-    providers: [
-        AuthService,
-        JwtStrategy,
-    ],
-    // экспортируем эти модули чтобы защитник в других модулях мог их использовать
+    providers: [AuthService, JwtStrategy],
     exports: [PassportModule, JwtModule, JwtStrategy],
 })
 export class AuthModule {}
