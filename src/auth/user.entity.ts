@@ -1,6 +1,7 @@
 // шаблон для таблиц в базе данных
 
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {Column, Entity, PrimaryGeneratedColumn, OneToMany} from "typeorm";
+import { Task } from '../tasks/task.entity';
 
 @Entity('user') // связываем класс с таблицей user в бд
 export class User {
@@ -13,5 +14,6 @@ export class User {
     @Column() // колонка для хешированного пороля
     password: string;
 
-    // в будущем здесь будут связи с другими таблицами
+    @OneToMany(() => Task, task => task.user, { eager: true })
+    tasks: Task[];
 }

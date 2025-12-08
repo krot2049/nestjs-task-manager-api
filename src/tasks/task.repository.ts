@@ -1,16 +1,24 @@
-import { DataSource, Repository} from "typeorm";
+import { DataSource, Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
-import { Task } from './task.entity';
+import { Task, TaskStatus } from './task.entity';
 
 @Injectable()
-    // насследуемся от Repository<Task>, получае готовые методы
 export class TaskRepository extends Repository<Task> {
-    // внедряем DataSource, чтобы TypeORM мог создать менеджер сущностей
-    constructor(dataSource: DataSource) {
-        // вызываем родительский конструкт для корректной иницилизации репозитория
+    constructor(private dataSource: DataSource) {
         super(Task, dataSource.createEntityManager());
     }
 
-    // тут будет логика работы с бд
-}
+    async createTask(createTaskDto: any, user: any): Promise<Task> {
+        const { title, description } = createTaskDto;
 
+        const task = this.create({
+            title,
+            description,
+            status: TaskStatus.OPEN,
+            user
+        });
+
+        await this.save(task);
+        return task;
+    }
+}

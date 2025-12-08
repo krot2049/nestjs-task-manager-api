@@ -3,6 +3,8 @@ import { TaskRepository } from './task.repository';
 import { Task, TaskStatus } from './task.entity';
 import { CreateTasksDto } from './dto/create-task.dto';
 import { GetTasksFilterDto} from "./dto/get-tasks-filter.dto";
+import { User } from '../auth/user.entity';
+
 
 @Injectable()
 export class TasksService {
@@ -11,12 +13,13 @@ export class TasksService {
     ) {}
 
     // логика crud, метод для создания новой задачи
-    async createTask(createTasksDto: CreateTasksDto): Promise<Task> {
+    async createTask(createTasksDto: CreateTasksDto, user:User): Promise<Task> {
         const { title, description } = createTasksDto;
         const task = this.taskRepository.create({
             title,
             description,
             status: TaskStatus.OPEN,
+            user,
         });
 
         await this.taskRepository.save(task);
@@ -25,28 +28,21 @@ export class TasksService {
     }
 
     // метод для обновления только статуса
-    async updateTaskStatus(taskId: number, status: TaskStatus): Promise<Task> {
+    async updateTaskStatus(taskId: number, status: TaskStatus, user: User): Promise<Task> {
 
         // используем Query Builder для обновления только колонки status
-        const result = await this.taskRepository.update(
-            { id: taskId },
-            { status }
-        );
-
-        // проверяем была ли запись обновлена
-        if (result.affected === 0) {
-            throw new NotFoundException(`Задача с ID "${taskId}" не найдена`);
-        }
-
-        // возвращаем полностью актуальный объект
-        return this.getTask(taskId);
+        const task = await this.getTask(taskId, user);
+        task.status = status;
+        await this.taskRepository.save(task);
+        return task;
     }
 
     // метод для получения всех задач
 
-    async getTasks(filterDto: GetTasksFilterDto): Promise<Task[]> {
+    async getTasks(filterDto: GetTasksFilterDto, user: User): Promise<Task[]> {
         const { status, search } = filterDto;
         const query = this.taskRepository.createQueryBuilder('task');
+        query.where('task.userId = :userId', { userId: user.id });
 
         // фильтрация по статусу
         if (status) {
@@ -66,8 +62,13 @@ export class TasksService {
 
     // метод для получения задачи по id
 
-    async getTask(taskId: number): Promise<Task> {
-        const found = await this.taskRepository.findOneBy({ id: taskId });
+    async getTask(taskId: number, user: User): Promise<Task> {
+        const found = await this.taskRepository.findOne({
+            where: {
+                id: taskId,
+                user: { id: user.id }
+            }
+        });
 
         if (!found) {
             throw new NotFoundException(`Задача с ID "${taskId}" не найдена`);
@@ -77,9 +78,12 @@ export class TasksService {
 
     // метод для удаления задач по id
 
-    async deleteTask(taskId: number): Promise<void> {
+    async deleteTask(taskId: number, user: User): Promise<void> {
         // метод delete удаляет запись по условию (id)
-        const result = await this.taskRepository.delete(taskId);
+        const result = await this.taskRepository.delete({
+            id: taskId,
+            user: { id: user.id }
+        });
 
         // проверяем была ли удалена хотя бы одна строка
 

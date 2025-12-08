@@ -5,22 +5,29 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { User } from './user.entity';
+import { JwtStrategy } from './jwt/jwt.strategy';
 
 @Module({
     imports: [
         PassportModule.register({ defaultStrategy: 'jwt' }),
         JwtModule.register({
+
             secret: 'topSecret51',
             signOptions: {
-                expiresIn: '3600',
+                expiresIn: '1h',
             },
         }),
+
         // подключаем репозиторий user чтобы authService мог работать с базой
         TypeOrmModule.forFeature([User])
     ],
+
     controllers: [AuthController],
-    providers: [AuthService],
+    providers: [
+        AuthService,
+        JwtStrategy,
+    ],
     // экспортируем эти модули чтобы защитник в других модулях мог их использовать
-    exports: [PassportModule, JwtModule],
+    exports: [PassportModule, JwtModule, JwtStrategy],
 })
 export class AuthModule {}
