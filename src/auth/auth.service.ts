@@ -1,11 +1,12 @@
 // логика сервиса аутенфикации
-
 import { ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository} from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import * as bcrypt from "bcryptjs"; // для хеширования паролей
 import { User } from './user.entity';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload} from "./jwt/jwt-payload.interface";
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     constructor(
         @InjectRepository(User)
         private userRepository: Repository<User>,
+        private jwtService: JwtService,
     ) {}
 
     // метод, регистрация нового пользователя
@@ -49,15 +51,18 @@ export class AuthService {
 
         // найти пользователя по имени
         const user = await this.userRepository.findOneBy({ username });
-        if (user) {
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (isMatch) {
-                return { accessToken: 'PLACEHOLDER_TOKEN'}
-            }else{
-                throw new UnauthorizedException('Неверные учетные данные');
-            }
+
+        // проверяем существует ли пользователь, и совподает ли хеш пароля
+        if (user &&(await bcrypt.compare(password, user.password))) {
+
+            const payload: JwtPayload = { username };
+
+            // генерируем токен с помощью JwtService
+            const accessToken: string = await this.jwtService.sign(payload);
+
+            return { accessToken };
         }else{
-            throw new UnauthorizedException('Неверные учетные данные');
+            throw new UnauthorizedException('Неверные учетные данные')
         }
     }
 }
