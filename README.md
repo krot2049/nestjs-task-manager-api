@@ -1,52 +1,56 @@
 # Task Manager API
 
-1. Запустите Docker-контейнер с базой данных
-   docker-compose up -d
-   Важно: Docker должен быть установлен и запущен перед выполнением этой команды
+## Запуск
 
-2. Запуск сервера:
+1. **Запустите базу данных:**
+   docker-compose up -d
+
+*Docker должен быть установлен и запущен!*
+
+
+2. **Установите зависимости и запустите сервер:**
    npm install
    npm run start:dev
 
-3. Откройте index.html в браузере
-   Тестируйте API через готовый веб-интерфейс
 
-4. Настройка базы данных (если нужно)
-  По умолчанию используется PostgreSQL на localhost:5432 с базой task_manager.
+3. **Откройте index.html в браузере** для тестирования API.
 
-  Если у вас другие настройки, создайте файл .env:
+## Настройка БД (если нужно)
 
-  DB_HOST=localhost
-  DB_PORT=5432
-  DB_USERNAME=postgres
-  DB_PASSWORD=postgres
-  DB_NAME=task_manager
-  JWT_SECRET=ваш-секретный-ключ
+По умолчанию: PostgreSQL на localhost:5432, база task_manager.
 
-# Что умеет веб-интерфейс:
-# Авторизация
-Регистрация новых пользователей
-Вход с получением JWT токена
-Автоматическое сохранение токена
+Создайте файл `.env` для своих настроек:
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_NAME=task_manager
+JWT_SECRET=ваш-секретный-ключ
 
-# Управление задачами
-Создание новых задач
-Просмотр всех своих задач
-Фильтрация по статусу (OPEN, IN_PROGRESS, DONE)
-Поиск по названию и описанию
-Обновление статуса задач
-Удаление задач
 
-# Технические детали
-# Эндпоинты:
 
-POST /auth/signup - регистрация
-POST /auth/signin - вход (JWT токен)
-POST /tasks - создать задачу
-GET /tasks - получить все задачи
-PATCH /tasks/:id/status - обновить статус
-DELETE /tasks/:id - удалить задачу
+## Возможности
 
-# Фильтрация:
-GET /tasks?status=OPEN
-GET /tasks?search=текст
+### Авторизация
+- Регистрация
+- Вход с JWT
+- Автосохранение токена
+
+### Задачи
+- Создание, просмотр, обновление, удаление
+- Фильтрация по статусу (OPEN, IN_PROGRESS, DONE)
+- Поиск по тексту
+
+## API
+
+### Эндпоинты
+- POST `/auth/signup` — регистрация
+- POST `/auth/signin` — вход
+- POST `/tasks` — создать задачу
+- GET `/tasks` — все задачи
+- PATCH `/tasks/:id/status` — обновить статус
+- DELETE `/tasks/:id` — удалить задачу
+
+### Фильтрация
+- GET `/tasks?status=OPEN`
+- GET `/tasks?search=текст`
