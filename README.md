@@ -48,6 +48,7 @@ JWT_SECRET=ваш-секретный-ключ
 - POST `/auth/signin` — вход
 - POST `/tasks` — создать задачу
 - GET `/tasks` — все задачи
+- GET `/tasks/:id` — получить задачу по ID
 - PATCH `/tasks/:id/status` — обновить статус
 - DELETE `/tasks/:id` — удалить задачу
 
